@@ -1,65 +1,98 @@
-const API_URL = 'https://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key=3fd2be6f0c70a2a598f084ddfb75487c&page=1'
-const IMG_PATH = 'https://image.tmdb.org/t/p/w1280'
-const SEARCH_API = 'https://api.themoviedb.org/3/search/movie?api_key=3fd2be6f0c70a2a598f084ddfb75487c&query="'
+const quizData = [
+    {
+        question: "Qual idioma é executado em um navegador da web ?",
+        a: "Java",
+        b: "C",
+        c: "Python",
+        d: "JavaScript",
+        correct: "d",
+    },
+    {
+        question: "Oque significa CSS?",
+        a: "Folhas de estilo central",
+        b: "Folhas de estilo em cascata",
+        c: "Folhas simples em cascata",
+        d: "Carros SUVs veleiros",
+        correct: "b",
+    },
+    {
+        question: "Oque significa HTML?",
+        a: "Linguagem de marcação de hipertexto",
+        b: "Linguagem Markdown de hipertexto",
+        c: "Linguagem de máquina Hyperloop",
+        d: "Helicópteros Terminais Lanchas Lamborginis",
+        correct: "a",
+    },
+    {
+        question: "Em que ano o JavaScript foi lançado?",
+        a: "1996",
+        b: "1995",
+        c: "1994",
+        d: "nenhuma das acima",
+        correct: "b",
+    },
+];
 
-const main = document.getElementById('main')
-const form = document.getElementById('form')
-const search = document.getElementById('search')
+const quiz = document.getElementById('quiz')
+const answerEls = document.querySelectorAll('.answer')
+const questionEl = document.getElementById('question')
+const a_text = document.getElementById('a_text')
+const b_text = document.getElementById('b_text')
+const c_text = document.getElementById('c_text')
+const d_text = document.getElementById('d_text')
+const submitBtn = document.getElementById('submit')
 
-// Get initial movies
-getMovies(API_URL)
+let currentQuiz = 0
+let score = 0
 
-async function getMovies(url) {
-    const res = await fetch(url)
-    const data = await res.json()
+loadQuiz()
 
-    showMovies(data.results)
+function loadQuiz() {
+    deselectAnswers()
+
+    const currentQuizData = quizData[currentQuiz]
+
+    questionEl.innerText = currentQuizData.question
+    a_text.innerText = currentQuizData.a
+    b_text.innerText = currentQuizData.b
+    c_text.innerText = currentQuizData.c
+    d_text.innerText = currentQuizData.d
 }
 
-function showMovies(movies) {
-    main.innerHTML = ''
+function deselectAnswers() {
+    answerEls.forEach(answerEl => answerEl.checked = false)
+}
 
-    movies.forEach((movie) => {
-        const { title, poster_path, vote_average, overview } = movie
+function getSelected() {
+    let answer
 
-        const movieEl = document.createElement('div')
-        movieEl.classList.add('movie')
-
-        movieEl.innerHTML = `
-            <img src="${IMG_PATH + poster_path}" alt="${title}">
-            <div class="movie-info">
-          <h3>${title}</h3>
-          <span class="${getClassByRate(vote_average)}">${vote_average}</span>
-            </div>
-            <div class="overview">
-          <h3>Overview</h3>
-          ${overview}
-        </div>
-        `
-        main.appendChild(movieEl)
+    answerEls.forEach(answerEl => {
+        if(answerEl.checked) {
+            answer = answerEl.id
+        }
     })
+
+    return answer
 }
 
-function getClassByRate(vote) {
-    if(vote >= 8) {
-        return 'green'
-    } else if(vote >= 5) {
-        return 'orange'
-    } else {
-        return 'red'
-    }
-}
+submitBtn.addEventListener('click', () => {
+    const answer = getSelected()
+    
+    if(answer) {
+        if(answer === quizData[currentQuiz].correct) {
+            score++
+        }
 
-form.addEventListener('submit', (e) => {
-    e.preventDefault()
+        currentQuiz++
 
-    const searchTerm = search.value
+        if(currentQuiz < quizData.length) {
+            loadQuiz()
+        } else {
+            quiz.innerHTML = `
+                <h2>Você respondeu ${score}/${quizData.length}perguntas corretamente </h2>
 
-    if(searchTerm && searchTerm !== '') {
-        getMovies(SEARCH_API + searchTerm)
-
-        search.value = ''
-    } else {
-        window.location.reload()
+                <button onclick="location.reload()">Refazer</button>
+            `
+        }
     }
 })
